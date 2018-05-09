@@ -1,0 +1,33 @@
+{
+  "name": "@uts-ersearch/sails-hook-redbox-template",
+  "version": "1.0.0",
+  "description": "A Sails Hook Template",
+  "main": "index.js",
+  "sails": {
+    "isHook": true,
+    "hookName": "template"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test node_modules/.bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@code.research.uts.edu.au:eresearch/sails-hook-redbox-template.git"
+  },
+  "keywords": [
+    "sails",
+    "hook",
+    "redbox",
+    "provisioner"
+  ],
+  "author": "Moises Sacal",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "mocha": "^5.1.1",
+    "sails": "^1.0.2",
+    "supertest": "^3.0.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.10"
+  }
+}
