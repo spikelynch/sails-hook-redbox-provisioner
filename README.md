@@ -55,7 +55,7 @@ It may cause your application to not lift.
 ```sh
 $ npm test
 
-> @uts-ersearch/sails-hook-redbox-template@1.0.0 test /Users/moises/source/code.research/sails-hook-redbox-template
+> @uts-eresearch/sails-hook-redbox-template@1.0.0 test /Users/moises/source/code.research/sails-hook-redbox-template
 > NODE_ENV=test node_modules/.bin/mocha
 
 

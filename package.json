@@ -1,5 +1,5 @@
 {
-  "name": "@uts-ersearch/sails-hook-redbox-template",
+  "name": "@uts-eresearch/sails-hook-redbox-template",
   "version": "1.0.0",
   "description": "A Sails Hook Template",
   "main": "index.js",
