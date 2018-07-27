@@ -2,9 +2,7 @@ const _ = require('lodash');
 
 const ProvisionerController = require('./api/controllers/ProvisionerController');
 const ProvisionerService = require('./api/services/ProvisionerService');
-const recordTypeConfig = require('./config/recordtype.js');
-const workflowConfig = require('./config/workflow.js');
-const recordFormConfig = require('./form-config/provisioner-1.0-draft.js');
+const ProvisionerConfig = require('./config/provisioner.js');
 
 module.exports = function (sails) {
   return {
@@ -22,9 +20,7 @@ module.exports = function (sails) {
     },
     configure: function () {
       sails.services['ProvisionerService'] = ProvisionerService;
-      sails.config = _.merge(sails.config, recordTypeConfig);
-      sails.config = _.merge(sails.config, workflowConfig);
-      sails.config['form']['forms'] = _.merge(sails.config['form']['forms'], {'Provisioner-1.0-draft': recordFormConfig});
+      sails.config = _.merge(sails.config, ProvisionerConfig);
     }
   }
 };

@@ -36,12 +36,6 @@ describe('Basic tests ::', function () {
     done();
   });
 
-  it('should have a form', function (done) {
-    const type = sails.config['form']['forms']['template-1.0-draft']['type'];
-    assert.equal(type, 'template');
-    done();
-  });
-
   it('should have a route', function (done) {
     supertest(sails.hooks.http.app)
       .get('/:branding/:portal/ws/provisioner/hello')
