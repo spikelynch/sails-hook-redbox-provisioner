@@ -2,7 +2,7 @@ const Sails = require('sails').Sails;
 const assert = require('assert');
 var supertest = require('supertest');
 
-const TemplateService = require('../api/services/TemplateService');
+const ProvisionerService = require('../api/services/ProvisionerService');
 
 describe('Basic tests ::', function () {
 
@@ -18,7 +18,7 @@ describe('Basic tests ::', function () {
     Sails().lift({
       hooks: {
         // Load the hook
-        "sails-hook-redbox-template": require('../'),
+        "sails-hook-redbox-provisioner": require('../'),
         // Skip grunt (unless your hook uses it)
         "grunt": false
       },
@@ -32,7 +32,7 @@ describe('Basic tests ::', function () {
   });
 
   it('should have a service', function (done) {
-    assert.equal(sails.services['TemplateService'].helloWorld(), 'Hello World');
+    assert.equal(sails.services['ProvisionerService'].helloWorld(), 'Hello World');
     done();
   });
 
@@ -44,7 +44,7 @@ describe('Basic tests ::', function () {
 
   it('should have a route', function (done) {
     supertest(sails.hooks.http.app)
-      .get('/:branding/:portal/ws/template/hello')
+      .get('/:branding/:portal/ws/provisioner/hello')
       .expect(200)
       .end(function (err, res) {
         assert.equal(res.text, 'Hello World');
