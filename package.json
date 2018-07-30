@@ -1,18 +1,19 @@
 {
-  "name": "@uts-eresearch/sails-hook-redbox-template",
+  "name": "sails-hook-redbox-provisioner",
   "version": "1.0.0",
-  "description": "A Sails Hook Template",
+  "description": "Sails hook for Provisioner dataset management",
   "main": "index.js",
   "sails": {
     "isHook": true,
-    "hookName": "template"
+    "hookName": "provisioner"
   },
   "scripts": {
-    "test": "NODE_ENV=test node_modules/.bin/mocha"
+    "test": "NODE_ENV=test node_modules/.bin/mocha",
+    "type": "node_modules/.bin/tsc --project tsconfig.json"
   },
   "repository": {
     "type": "git",
-    "url": "git@code.research.uts.edu.au:eresearch/sails-hook-redbox-template.git"
+    "url": "git@github.com:spikelynch/sails-hook-redbox-provisioner.git"
   },
   "keywords": [
     "sails",
@@ -20,14 +21,25 @@
     "redbox",
     "provisioner"
   ],
-  "author": "Moises Sacal",
+  "author": "Mike Lynch",
   "license": "GPL-3.0",
   "devDependencies": {
+    "@types/express": "^4.16.0",
+    "@types/lodash": "^4.14.111",
+    "@types/mocha": "^5.2.1",
+    "@types/node": "^10.3.1",
     "mocha": "^5.1.1",
-    "sails": "^1.0.2",
-    "supertest": "^3.0.0"
+    "sails": "1.0.0",
+    "supertest": "^3.0.0",
+    "ts-node": "^6.1.0",
+    "typescript": ">=2.4.2 <2.7.0"
   },
   "dependencies": {
-    "lodash": "^4.17.10"
+    "lodash": "^4.17.10",
+    "ncp": "^2.0.0",
+    "path-exists": "^3.0.0",
+    "rxjs": "^5.4.1",
+    "typescript": ">=2.4.2 <2.7.0",
+    "uts-provisioner-api": "^1.0.0"
   }
 }

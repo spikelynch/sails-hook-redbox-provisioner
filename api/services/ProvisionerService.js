@@ -1,6 +1,31 @@
-module.exports = {
-
-  helloWorld: function () {
-    return 'Hello World';
-  }
-};
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var services = require("../core/CoreService.js");
+var Services;
+(function (Services) {
+    var ProvisionerService = (function (_super) {
+        __extends(ProvisionerService, _super);
+        function ProvisionerService() {
+            var _this = _super.call(this) || this;
+            _this._exportedMethods = [
+                'getDatastream',
+                'addDatastream',
+                'removeDatastream',
+                'listDatastreams'
+            ];
+            return _this;
+        }
+        return ProvisionerService;
+    }(services.Services.Core.Service));
+    Services.ProvisionerService = ProvisionerService;
+})(Services = exports.Services || (exports.Services = {}));
