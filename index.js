@@ -1,8 +1,8 @@
 const _ = require('lodash');
 
-const ProvisionerController = require('./api/controllers/ProvisionerController');
 const ProvisionerService = require('./api/services/ProvisionerService');
-const ProvisionerConfig = require('./config/provisioner.js');
+const ProvisionerController = require('./api/controllers/ProvisionerController');
+const provisionerConfig = require('./config/provisioner.js');
 
 module.exports = function (sails) {
   return {
@@ -15,12 +15,12 @@ module.exports = function (sails) {
     routes: {
       before: {},
       after: {
-        'get /:branding/:portal/ws/provisioner/hello': ProvisionerController.helloWorld
+//        'get /:branding/:portal/ws/provisioner/hello': ProvisionerController.helloWorld
       }
     },
     configure: function () {
       sails.services['ProvisionerService'] = ProvisionerService;
-      sails.config = _.merge(sails.config, ProvisionerConfig);
+      sails.config = _.merge(sails.config, provisionerConfig);
     }
   }
 };

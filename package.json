@@ -2,7 +2,7 @@
   "name": "sails-hook-redbox-provisioner",
   "version": "1.0.0",
   "description": "Sails hook for Provisioner dataset management",
-  "main": "index.js",
+  "main": "dist/index.js",
   "sails": {
     "isHook": true,
     "hookName": "provisioner"
@@ -36,10 +36,9 @@
   },
   "dependencies": {
     "lodash": "^4.17.10",
-    "ncp": "^2.0.0",
     "path-exists": "^3.0.0",
     "rxjs": "^5.4.1",
     "typescript": ">=2.4.2 <2.7.0",
-    "uts-provisioner-api": "^1.0.0"
+    "uts-provisioner-api": "^1.0.2"
   }
 }
