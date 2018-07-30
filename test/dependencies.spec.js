@@ -61,31 +61,25 @@ describe('Basic tests ::', function () {
     done();
   });
 
-  it('can get a datastream', async function () {
+  it('can get a datastream', function () {
     const ps = sails.services['ProvisionerService'];
     ps._config(sails.config.provisioner);
     const origpath = path.join(FIXTURES, STORE, OBJECT, FILE);
-    const badpath = path.join(FIXTURES, STORE, OBJECT, BADFILE);
     const fpath = path.join(OUTDIR, FILE);
-    let result, error;
-    try {
-      ps.getDatastream(STORE, OBJECT, FILE)
-        .subscribe(async (ds) => {
-          expect(ds).to.not.be.empty;
-          const fstream = fs.createWriteStream(fpath);
-          await ds.pipe(fstream);
-          },
-          e => {
-            console.log("error " + e);
-            done();
+    ps.getDatastream(STORE, OBJECT, FILE)
+      .subscribe((ds) => {
+        expect(ds).to.not.be.empty;
+        const fstream = fs.createWriteStream(fpath);
+        ds.pipe(fstream)
+        .on('finish', (k) => {
+          console.log("wrote " + fpath + " and got " + k);
+          console.log(JSON.stringify(k));
+          expect(file(fpath)).to.equal(file(origpath));
         });
-    } catch( e ) {
-      error = e;
-    } finally {
-      expect(error).to.be.undefined;
-      expect(file(fpath)).to.exist;
-      expect(file(fpath)).to.equal(file(badpath));
-    }
+      },
+      e => {
+        console.log("error " + e);
+      });
   });
 
 
