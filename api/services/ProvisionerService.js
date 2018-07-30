@@ -55,14 +55,19 @@ var Services;
         function ProvisionerService() {
             var _this = _super.call(this) || this;
             _this._exportedMethods = [
+                '_config',
                 'getDatastream',
                 'addDatastream',
                 'removeDatastream',
                 'listDatastreams',
                 'helloWorld'
             ];
+            _this.config = {};
             return _this;
         }
+        ProvisionerService.prototype._config = function (cfg) {
+            this.config = cfg;
+        };
         ProvisionerService.prototype.helloWorld = function () {
             return "Hello World";
         };
@@ -93,8 +98,8 @@ var Services;
             return "";
         };
         ProvisionerService.prototype.getFilesApp = function (storeid) {
-            if (storeid in sails.config.provisioner.stores) {
-                return new uts_provisioner_api_1.FilesApp(storeid, sails.config.provisioner.stores[storeid]);
+            if (storeid in this.config["stores"]) {
+                return new uts_provisioner_api_1.FilesApp(storeid, this.config["stores"][storeid]);
             }
             else {
                 return undefined;

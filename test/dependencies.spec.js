@@ -1,6 +1,31 @@
+//
+// Provisioner - (c) 2018 University of Technology Sydney
+//
+// Tests for sails-hook-redbox-provisioner
+
+
+const chai = require('chai');
+const chaiFiles = require('chai-files');
+
+chai.use(chaiFiles);
+
+const expect = chai.expect;
+var file = chaiFiles.file;
+
+const path = require('path');
+
+const fs = require('fs-extra');
 const Sails = require('sails').Sails;
 const assert = require('assert');
 var supertest = require('supertest');
+
+const FIXTURES = './test/fixtures';
+const OUTDIR = './test/output';
+
+const STORE = 'staging';
+const OBJECT = 'object';
+const FILE = 'datastream.txt';
+const BADFILE = 'not_datastream.txt';
 
 const ProvisionerService = require('../api/services/ProvisionerService');
 
@@ -36,8 +61,37 @@ describe('Basic tests ::', function () {
     done();
   });
 
+  it('can get a datastream', async function () {
+    const ps = sails.services['ProvisionerService'];
+    ps._config(sails.config.provisioner);
+    const origpath = path.join(FIXTURES, STORE, OBJECT, FILE);
+    const badpath = path.join(FIXTURES, STORE, OBJECT, BADFILE);
+    const fpath = path.join(OUTDIR, FILE);
+    let result, error;
+    try {
+      ps.getDatastream(STORE, OBJECT, FILE)
+        .subscribe(async (ds) => {
+          expect(ds).to.not.be.empty;
+          const fstream = fs.createWriteStream(fpath);
+          await ds.pipe(fstream);
+          },
+          e => {
+            console.log("error " + e);
+            done();
+        });
+    } catch( e ) {
+      error = e;
+    } finally {
+      expect(error).to.be.undefined;
+      expect(file(fpath)).to.exist;
+      expect(file(fpath)).to.equal(file(badpath));
+    }
+  });
+
+
   // routes aren't working because of the fussiness with testing
   // Typescript controllers in sails
+
   it.skip('should have a route', function (done) {
     supertest(sails.hooks.http.app)
       .get('/:branding/:portal/ws/provisioner/hello')
@@ -49,6 +103,7 @@ describe('Basic tests ::', function () {
   });
 
   // After tests are complete, lower Sails
+  
   after(function (done) {
 
     // Lower Sails (if it successfully lifted)

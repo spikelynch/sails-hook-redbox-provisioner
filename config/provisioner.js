@@ -1,8 +1,8 @@
 module.exports = {
 	provisioner: {
 		stores: {
-			staging: './fixtures/staging',
-			public: './fixtures/public'
+			staging: './test/fixtures/staging',
+			public: './test/fixtures/public'
 		}
 	}
 }
