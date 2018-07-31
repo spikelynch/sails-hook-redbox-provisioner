@@ -10,7 +10,7 @@ const chaiFiles = require('chai-files');
 chai.use(chaiFiles);
 
 const expect = chai.expect;
-var file = chaiFiles.file;
+const file = chaiFiles.file;
 
 const path = require('path');
 
@@ -25,6 +25,8 @@ const OUTDIR = './test/output';
 const STOREID = 'staging';
 const OBJECT = 'object';
 const FILE = 'datastream.txt';
+const INDEX = [ 'datastream.txt', 'datastream2.txt' ];
+
 const BADFILE = 'not_datastream.txt';
 
 const ProvisionerService = require('../api/services/ProvisionerService');
@@ -78,6 +80,18 @@ describe('Basic tests ::', function () {
         ds.pipe(fstream).on('finish', () => {
           expect(file(fpath)).to.equal(file(origpath));
         });
+      },
+      e => {
+        console.log("error " + e);
+      });
+  });
+
+
+  it('can get a list of datastreams', function () {
+    const ps = sails.services['ProvisionerService'];
+    ps.listDatastreams(store, OBJECT)
+      .subscribe((idx) => {
+        expect(idx).to.have.members(INDEX);
       },
       e => {
         console.log("error " + e);
