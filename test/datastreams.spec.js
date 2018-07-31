@@ -18,6 +18,7 @@ const fs = require('fs-extra');
 const Sails = require('sails').Sails;
 const assert = require('assert');
 var supertest = require('supertest');
+const _ = require('lodash');
 
 const fixtures = require('./fixtures');
 
@@ -98,6 +99,27 @@ describe('Basic tests ::', function () {
 
   });
 
+  it('can add a datastream to a dataset', function () {
+    const ps = sails.services['ProvisionerService'];
+    const dsid = _.keys(fixtures.FILES)[0]; // arbitrary file
+    const fpath = fixtures.FILES[dsid];
+
+    ps.createDataSet(store, DATASET)
+      .flatMap((dataset) => {
+        const fstream = fs.createReadStream(fpath);
+        return ps.addDataStream(store, DATASET, FILE, fstream)
+      })
+      .subscribe((dspath) => {
+        const epath = path.join(store['uri'], DATASET, fpath);
+        expect(dspath).to.equal(epath);
+        expect(file(fpath)).to.equal(file(dspath));
+      },
+      e => {
+        console.log("error " + e);
+      });
+  });
+
+
 
   it.skip('can get a datastream', function () {
     const ps = sails.services['ProvisionerService'];
@@ -127,23 +149,6 @@ describe('Basic tests ::', function () {
       });
   });
 
-  it.skip('can add a datastream', function () {
-    const ps = sails.services['ProvisionerService'];
-    const origpath = path.join(store['uri'], DATASET, FILE);
-    const fpath = path.join(OUTDIR, FILE);
-    ps.getDatastream(store, DATASET, FILE)
-      .subscribe((ds) => {
-        expect(ds).to.not.be.empty;
-        const fstream = fs.createWriteStream(fpath);
-        ds.pipe(fstream).on('finish', () => {
-          expect(file(fpath)).to.equal(file(origpath));
-        });
-      },
-      e => {
-        console.log("error " + e);
-      });
-
-  });
 
 
   // routes aren't working because of the fussiness with testing

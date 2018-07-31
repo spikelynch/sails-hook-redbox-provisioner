@@ -12,14 +12,16 @@ const OBJECTS = [
   'object2'
 ];
 
-const FILES = [
-  './test/files/ds1.txt',
-  './test/files/ds2.txt',
-  './test/files/ds3.jpg'
-];
 
 
 module.exports = {
+
+  FILES: {
+    'ds1.txt': './test/files/ds1.txt',
+    'ds2.txt': './test/files/ds2.txt',
+    'ds3.jpg': './test/files/ds3.jpg'
+  },
+
 
   OUTPUT: './test/output',
 
@@ -50,23 +52,6 @@ function empty_dir(dir) {
 }
 
 
-
-const STORES = {
-  staging: path.join(FIXTURES, 'staging'),
-  public: path.join(FIXTURES, 'public')
-};
-
-
-const STAGING_DIR = path.join(FIXTURES, 'staging');
-const PUBLIC_DIR = path.join(FIXTURES, 'public');
-
-const STOREID = 'staging';
-const OBJECT = 'object';
-
-const FILE = 'datastream.txt';
-const INDEX = [ 'datastream.txt', 'datastream2.txt' ];
-
-const BADFILE = 'not_datastream.txt';
 
 
 
