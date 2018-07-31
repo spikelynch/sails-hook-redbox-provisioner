@@ -62,6 +62,8 @@ var Services;
             ];
             return _this;
         }
+        ProvisionerService.prototype._config = function () {
+        };
         ProvisionerService.prototype.listDatastreams = function (store, oid) {
             var _this = this;
             var fa = this.getFilesApp(store);

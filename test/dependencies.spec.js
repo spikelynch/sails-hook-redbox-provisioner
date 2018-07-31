@@ -88,15 +88,15 @@ describe('Basic tests ::', function () {
   // routes aren't working because of the fussiness with testing
   // Typescript controllers in sails
 
-  it.skip('should have a route', function (done) {
-    supertest(sails.hooks.http.app)
-      .get('/:branding/:portal/ws/provisioner/hello')
-      .expect(200)
-      .end(function (err, res) {
-        assert.equal(res.text, 'Hello World');
-        done();
-      });
-  });
+  // it.skip('should have a route', function (done) {
+  //   supertest(sails.hooks.http.app)
+  //     .get('/:branding/:portal/ws/provisioner/hello')
+  //     .expect(200)
+  //     .end(function (err, res) {
+  //       assert.equal(res.text, 'Hello World');
+  //       done();
+  //     });
+  // });
 
   // After tests are complete, lower Sails
   
