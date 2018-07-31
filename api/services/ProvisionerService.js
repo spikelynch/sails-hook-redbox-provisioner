@@ -55,25 +55,16 @@ var Services;
         function ProvisionerService() {
             var _this = _super.call(this) || this;
             _this._exportedMethods = [
-                '_config',
                 'getDatastream',
                 'addDatastream',
                 'removeDatastream',
-                'listDatastreams',
-                'helloWorld'
+                'listDatastreams'
             ];
-            _this.config = {};
             return _this;
         }
-        ProvisionerService.prototype._config = function (cfg) {
-            this.config = cfg;
-        };
-        ProvisionerService.prototype.helloWorld = function () {
-            return "Hello World";
-        };
-        ProvisionerService.prototype.getDatastream = function (storeid, oid, dsid) {
+        ProvisionerService.prototype.listDatastreams = function (store, oid) {
             var _this = this;
-            var fa = this.getFilesApp(storeid);
+            var fa = this.getFilesApp(store);
             if (fa) {
                 return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
                     var fo;
@@ -82,28 +73,71 @@ var Services;
                             case 0: return [4, fa.find(oid)];
                             case 1:
                                 fo = _a.sent();
-                                return [2, fo.export_stream(dsid)];
+                                if (!fo) return [3, 3];
+                                return [4, fo.index()];
+                            case 2: return [2, _a.sent()];
+                            case 3: return [2, undefined];
                         }
                     });
                 }); });
             }
-        };
-        ProvisionerService.prototype.addDatastream = function () {
-            return "";
-        };
-        ProvisionerService.prototype.removeDatastream = function () {
-            return "";
-        };
-        ProvisionerService.prototype.listDatastreams = function () {
-            return "";
-        };
-        ProvisionerService.prototype.getFilesApp = function (storeid) {
-            if (storeid in this.config["stores"]) {
-                return new uts_provisioner_api_1.FilesApp(storeid, this.config["stores"][storeid]);
-            }
             else {
                 return undefined;
             }
+        };
+        ProvisionerService.prototype.getDatastream = function (store, oid, dsid) {
+            var _this = this;
+            var fa = this.getFilesApp(store);
+            if (fa) {
+                return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
+                    var fo;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, fa.find(oid)];
+                            case 1:
+                                fo = _a.sent();
+                                if (fo)
+                                    return [2, fo.export_stream(dsid)];
+                                else {
+                                    return [2, undefined];
+                                }
+                                return [2];
+                        }
+                    });
+                }); });
+            }
+            else {
+                return Rx_1.Observable.of(undefined);
+            }
+        };
+        ProvisionerService.prototype.addDatastream = function (store, oid, dsid, st) {
+            var _this = this;
+            var fa = this.getFilesApp(store);
+            if (fa) {
+                return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
+                    var fo;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, fa.find(oid)];
+                            case 1:
+                                fo = _a.sent();
+                                if (!fo) return [3, 3];
+                                return [4, fo.import_stream(dsid, st)];
+                            case 2: return [2, _a.sent()];
+                            case 3: return [2, undefined];
+                        }
+                    });
+                }); });
+            }
+            else {
+                return Rx_1.Observable.of(undefined);
+            }
+        };
+        ProvisionerService.prototype.removeDatastream = function (store) {
+            return Rx_1.Observable.of(false);
+        };
+        ProvisionerService.prototype.getFilesApp = function (scf) {
+            return new uts_provisioner_api_1.FilesApp(scf['id'], scf['uri']);
         };
         return ProvisionerService;
     }(services.Services.Core.Service));

@@ -22,7 +22,7 @@ var supertest = require('supertest');
 const FIXTURES = './test/fixtures';
 const OUTDIR = './test/output';
 
-const STORE = 'staging';
+const STOREID = 'staging';
 const OBJECT = 'object';
 const FILE = 'datastream.txt';
 const BADFILE = 'not_datastream.txt';
@@ -33,6 +33,8 @@ describe('Basic tests ::', function () {
 
   // Var to hold a running sails app instance
   var sails;
+  // Var to hold the store config
+  var store;
   // Before running any tests, attempt to lift Sails
   before(function (done) {
 
@@ -52,28 +54,28 @@ describe('Basic tests ::', function () {
     }, function (err, _sails) {
       if (err) return done(err);
       sails = _sails;
+      store = {
+        id: STOREID,
+        uri: sails.config.provisioner.stores[STOREID]
+      };
       return done();
     });
   });
 
   it('should have a service', function (done) {
-    assert.equal(sails.services['ProvisionerService'].helloWorld(), 'Hello World');
+    expect(sails.services['ProvisionerService']).to.not.be.empty;
     done();
   });
 
   it('can get a datastream', function () {
     const ps = sails.services['ProvisionerService'];
-    ps._config(sails.config.provisioner);
-    const origpath = path.join(FIXTURES, STORE, OBJECT, FILE);
+    const origpath = path.join(store['uri'], OBJECT, FILE);
     const fpath = path.join(OUTDIR, FILE);
-    ps.getDatastream(STORE, OBJECT, FILE)
+    ps.getDatastream(store, OBJECT, FILE)
       .subscribe((ds) => {
         expect(ds).to.not.be.empty;
         const fstream = fs.createWriteStream(fpath);
-        ds.pipe(fstream)
-        .on('finish', (k) => {
-          console.log("wrote " + fpath + " and got " + k);
-          console.log(JSON.stringify(k));
+        ds.pipe(fstream).on('finish', () => {
           expect(file(fpath)).to.equal(file(origpath));
         });
       },
