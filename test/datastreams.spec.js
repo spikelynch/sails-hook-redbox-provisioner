@@ -19,15 +19,7 @@ const Sails = require('sails').Sails;
 const assert = require('assert');
 var supertest = require('supertest');
 
-const FIXTURES = './test/fixtures';
-const OUTDIR = './test/output';
-
-const STOREID = 'staging';
-const OBJECT = 'object';
-const FILE = 'datastream.txt';
-const INDEX = [ 'datastream.txt', 'datastream2.txt' ];
-
-const BADFILE = 'not_datastream.txt';
+const fixtures = require('./fixtures');
 
 const ProvisionerService = require('../api/services/ProvisionerService');
 
@@ -37,8 +29,13 @@ describe('Basic tests ::', function () {
   var sails;
   // Var to hold the store config
   var store;
-  // Before running any tests, attempt to lift Sails
+
+  // fixture builder - make sure the file stores exist and are 
+  // empty
+
+  // reset the fixtures and lift sails
   before(function (done) {
+
 
     // Hook will timeout in 10 seconds
     this.timeout(11000);
@@ -57,11 +54,28 @@ describe('Basic tests ::', function () {
       if (err) return done(err);
       sails = _sails;
       store = {
-        id: STOREID,
-        uri: sails.config.provisioner.stores[STOREID]
+        id: 'staging',
+        uri: sails.config.provisioner.stores['staging']
       };
       return done();
     });
+  });
+
+  // reset fixtures before each test
+
+  beforeEach(function () {
+    console.log(fixtures);
+    fixtures.buildup(fixtures.OUTPUT);
+    for( var k in fixtures.STORES ) {
+      fixtures.buildup(fixtures.STORES[k]);
+    }
+  });
+
+  afterEach(function() {
+    fixtures.teardown(fixtures.OUTPUT);
+    for( var k in fixtures.STORES ) {
+      fixtures.teardown(fixtures.STORES[k]);
+    }
   });
 
   it('should have a service', function (done) {
@@ -86,7 +100,6 @@ describe('Basic tests ::', function () {
       });
   });
 
-
   it('can get a list of datastreams', function () {
     const ps = sails.services['ProvisionerService'];
     ps.listDatastreams(store, OBJECT)
@@ -97,6 +110,24 @@ describe('Basic tests ::', function () {
         console.log("error " + e);
       });
   });
+
+  it('can add a datastream', function () {
+    const ps = sails.services['ProvisionerService'];
+    const origpath = path.join(store['uri'], OBJECT, FILE);
+    const fpath = path.join(OUTDIR, FILE);
+    ps.getDatastream(store, OBJECT, FILE)
+      .subscribe((ds) => {
+        expect(ds).to.not.be.empty;
+        const fstream = fs.createWriteStream(fpath);
+        ds.pipe(fstream).on('finish', () => {
+          expect(file(fpath)).to.equal(file(origpath));
+        });
+      },
+      e => {
+        console.log("error " + e);
+      });
+
+  })
 
 
   // routes aren't working because of the fussiness with testing
