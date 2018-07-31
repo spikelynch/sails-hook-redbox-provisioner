@@ -55,6 +55,8 @@ var Services;
         function ProvisionerService() {
             var _this = _super.call(this) || this;
             _this._exportedMethods = [
+                'createDataSet',
+                'getDataSet',
                 'getDatastream',
                 'addDatastream',
                 'removeDatastream',
@@ -104,6 +106,40 @@ var Services;
                                     return [2, undefined];
                                 }
                                 return [2];
+                        }
+                    });
+                }); });
+            }
+            else {
+                return Rx_1.Observable.of(undefined);
+            }
+        };
+        ProvisionerService.prototype.createDataSet = function (store, oid) {
+            var _this = this;
+            var fa = this.getFilesApp(store);
+            if (fa) {
+                return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, fa.create(oid)];
+                            case 1: return [2, _a.sent()];
+                        }
+                    });
+                }); });
+            }
+            else {
+                return Rx_1.Observable.of(undefined);
+            }
+        };
+        ProvisionerService.prototype.getDataSet = function (store, oid) {
+            var _this = this;
+            var fa = this.getFilesApp(store);
+            if (fa) {
+                return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0: return [4, fa.find(oid)];
+                            case 1: return [2, _a.sent()];
                         }
                     });
                 }); });

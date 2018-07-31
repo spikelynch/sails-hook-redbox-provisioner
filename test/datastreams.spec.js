@@ -23,6 +23,8 @@ const fixtures = require('./fixtures');
 
 const ProvisionerService = require('../api/services/ProvisionerService');
 
+const DATASET = 'dataset1';
+
 describe('Basic tests ::', function () {
 
   // Var to hold a running sails app instance
@@ -64,7 +66,6 @@ describe('Basic tests ::', function () {
   // reset fixtures before each test
 
   beforeEach(function () {
-    console.log(fixtures);
     fixtures.buildup(fixtures.OUTPUT);
     for( var k in fixtures.STORES ) {
       fixtures.buildup(fixtures.STORES[k]);
@@ -83,11 +84,26 @@ describe('Basic tests ::', function () {
     done();
   });
 
-  it('can get a datastream', function () {
+
+  it('can create a dataset', function () {
     const ps = sails.services['ProvisionerService'];
-    const origpath = path.join(store['uri'], OBJECT, FILE);
+    ps.createDataSet(store, DATASET)
+      .subscribe((dataset) => {
+        expect(dataset).to.not.be.empty;
+        expect(dataset).to.have.property('id').to.equal(DATASET);
+      },
+      e => {
+        console.log("error " + e);
+      });
+
+  });
+
+
+  it.skip('can get a datastream', function () {
+    const ps = sails.services['ProvisionerService'];
+    const origpath = path.join(store['uri'], DATASET, FILE);
     const fpath = path.join(OUTDIR, FILE);
-    ps.getDatastream(store, OBJECT, FILE)
+    ps.getDatastream(store, DATASET, FILE)
       .subscribe((ds) => {
         expect(ds).to.not.be.empty;
         const fstream = fs.createWriteStream(fpath);
@@ -100,9 +116,9 @@ describe('Basic tests ::', function () {
       });
   });
 
-  it('can get a list of datastreams', function () {
+  it.skip('can get a list of datastreams', function () {
     const ps = sails.services['ProvisionerService'];
-    ps.listDatastreams(store, OBJECT)
+    ps.listDatastreams(store, DATASET)
       .subscribe((idx) => {
         expect(idx).to.have.members(INDEX);
       },
@@ -111,11 +127,11 @@ describe('Basic tests ::', function () {
       });
   });
 
-  it('can add a datastream', function () {
+  it.skip('can add a datastream', function () {
     const ps = sails.services['ProvisionerService'];
-    const origpath = path.join(store['uri'], OBJECT, FILE);
+    const origpath = path.join(store['uri'], DATASET, FILE);
     const fpath = path.join(OUTDIR, FILE);
-    ps.getDatastream(store, OBJECT, FILE)
+    ps.getDatastream(store, DATASET, FILE)
       .subscribe((ds) => {
         expect(ds).to.not.be.empty;
         const fstream = fs.createWriteStream(fpath);
@@ -127,7 +143,7 @@ describe('Basic tests ::', function () {
         console.log("error " + e);
       });
 
-  })
+  });
 
 
   // routes aren't working because of the fussiness with testing

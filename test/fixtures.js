@@ -7,6 +7,18 @@ const FIXTURES = './test/fixtures';
 const OUTPUT = './test/output';
 
 
+const OBJECTS = [
+  'object1',
+  'object2'
+];
+
+const FILES = [
+  './test/files/ds1.txt',
+  './test/files/ds2.txt',
+  './test/files/ds3.jpg'
+];
+
+
 module.exports = {
 
   OUTPUT: './test/output',
@@ -28,7 +40,6 @@ module.exports = {
 };
 
 function empty_dir(dir) {
-  console.trace(dir);
   var contents = fs.readdirSync(dir);
   for( var i = 0; i < contents.length; i++ ) {
     if( contents[i] != '.' && contents[i] != '..' ) {
