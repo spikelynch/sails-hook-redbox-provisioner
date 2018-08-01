@@ -8,8 +8,10 @@
     "hookName": "provisioner"
   },
   "scripts": {
-    "test": "NODE_ENV=test node_modules/.bin/mocha",
-    "type": "node_modules/.bin/tsc --project tsconfig.json"
+    "test": "mocha -r ts-node/register lib/**/*spec.ts",
+    "prepublishOnly": "npm run compile",
+    "compile": "npm run clean && tsc -p .",
+    "clean": "rm -rf dist"
   },
   "repository": {
     "type": "git",

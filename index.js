@@ -15,7 +15,7 @@ module.exports = function (sails) {
     routes: {
       before: {},
       after: {
-//        'get /:branding/:portal/ws/provisioner/hello': ProvisionerController.helloWorld
+        'get /:branding/:portal/ws/provisioner/datastream/$oid': ProvisionerController.getDatastream
       }
     },
     configure: function () {
