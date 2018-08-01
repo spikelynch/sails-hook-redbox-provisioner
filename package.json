@@ -1,6 +1,6 @@
 {
   "name": "sails-hook-redbox-provisioner",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Sails hook for Provisioner dataset management",
   "main": "dist/index.js",
   "sails": {
@@ -8,11 +8,17 @@
     "hookName": "provisioner"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register lib/**/*spec.ts",
+    "test": "mocha test/**/*spec.js",
     "prepublishOnly": "npm run compile",
     "compile": "npm run clean && tsc -p .",
     "clean": "rm -rf dist"
   },
+  "files": [
+    "index.js",
+    "api",
+    "config",
+    "test"
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:spikelynch/sails-hook-redbox-provisioner.git"

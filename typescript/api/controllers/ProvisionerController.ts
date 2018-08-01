@@ -42,15 +42,21 @@ export module Controllers {
 
 		protected _exportedMethods: any = [
 			'getDatastream',
-			'addDatastream',
-			'removeDatastream',
-			'addDatastreams',
-			'addAndRemoveDatastreams',   //not in use
-			'listDatastreams'
+			'helloWorld'
+			// 'addDatastream',
+			// 'removeDatastream',
+			// 'addDatastreams',
+			// 'addAndRemoveDatastreams',   //not in use
+			// 'listDatastreams'
 		];
 
 
 		public bootstrap() {
+		}
+
+		public helloWorld(req, res) {
+			sails.log.info("Called sails-hook-redbox-provisioner hello world");
+			return res.json({ hello: "hello, world"});
 		}
 
 		public getDatastream(req, res) {
