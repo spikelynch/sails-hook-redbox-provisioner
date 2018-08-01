@@ -57,14 +57,33 @@ var Services;
             _this._exportedMethods = [
                 'createDataSet',
                 'getDataSet',
+                'listDatastreams',
                 'getDatastream',
                 'addDatastream',
-                'removeDatastream',
-                'listDatastreams'
+                'addPath',
+                'delete',
             ];
             return _this;
         }
         ProvisionerService.prototype._config = function () {
+        };
+        ProvisionerService.prototype.createDataSet = function (store, oid) {
+            var fa = this.getFilesApp(store);
+            if (fa) {
+                return Rx_1.Observable.fromPromise(fa.create(oid));
+            }
+            else {
+                return Rx_1.Observable.of(undefined);
+            }
+        };
+        ProvisionerService.prototype.getDataSet = function (store, oid) {
+            var fa = this.getFilesApp(store);
+            if (fa) {
+                return Rx_1.Observable.fromPromise(fa.find(oid));
+            }
+            else {
+                return Rx_1.Observable.of(undefined);
+            }
         };
         ProvisionerService.prototype.listDatastreams = function (store, oid) {
             var fa = this.getFilesApp(store);
@@ -118,24 +137,6 @@ var Services;
                 });
             });
         };
-        ProvisionerService.prototype.createDataSet = function (store, oid) {
-            var fa = this.getFilesApp(store);
-            if (fa) {
-                return Rx_1.Observable.fromPromise(fa.create(oid));
-            }
-            else {
-                return Rx_1.Observable.of(undefined);
-            }
-        };
-        ProvisionerService.prototype.getDataSet = function (store, oid) {
-            var fa = this.getFilesApp(store);
-            if (fa) {
-                return Rx_1.Observable.fromPromise(fa.find(oid));
-            }
-            else {
-                return Rx_1.Observable.of(undefined);
-            }
-        };
         ProvisionerService.prototype.addDatastream = function (store, oid, dsid, st) {
             var fa = this.getFilesApp(store);
             if (fa) {
@@ -164,8 +165,61 @@ var Services;
                 });
             });
         };
-        ProvisionerService.prototype.removeDatastream = function (store) {
-            return Rx_1.Observable.of(false);
+        ProvisionerService.prototype.addPath = function (store, oid, path) {
+            var fa = this.getFilesApp(store);
+            if (fa) {
+                return Rx_1.Observable.fromPromise(this.oid_add_path(fa, oid, path));
+            }
+            else {
+                return Rx_1.Observable.of(undefined);
+            }
+        };
+        ProvisionerService.prototype.oid_add_path = function (fa, oid, path) {
+            return __awaiter(this, void 0, void 0, function () {
+                var fo;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4, fa.find(oid)];
+                        case 1:
+                            fo = _a.sent();
+                            if (fo) {
+                                return [2, fo.import_path(path)];
+                            }
+                            else {
+                                return [2, undefined];
+                            }
+                            return [2];
+                    }
+                });
+            });
+        };
+        ProvisionerService.prototype.delete = function (store, oid, dsid) {
+            var fa = this.getFilesApp(store);
+            if (fa) {
+                return Rx_1.Observable.fromPromise(this.oid_delete_stream(fa, oid, dsid));
+            }
+            else {
+                return Rx_1.Observable.of(undefined);
+            }
+        };
+        ProvisionerService.prototype.oid_delete_stream = function (fa, oid, dsid) {
+            return __awaiter(this, void 0, void 0, function () {
+                var fo;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4, fa.find(oid)];
+                        case 1:
+                            fo = _a.sent();
+                            if (fo) {
+                                return [2, fo.delete(dsid)];
+                            }
+                            else {
+                                return [2, undefined];
+                            }
+                            return [2];
+                    }
+                });
+            });
         };
         ProvisionerService.prototype.getFilesApp = function (scf) {
             return new uts_provisioner_api_1.FilesApp(scf['id'], scf['uri']);

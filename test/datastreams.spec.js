@@ -31,6 +31,8 @@ const DATASET = 'dataset1';
 
 describe('Basic tests ::', function () {
 
+  this.slow(500);
+
   // Var to hold a running sails app instance
   var sails;
   // Var to hold the store config
@@ -173,6 +175,39 @@ describe('Basic tests ::', function () {
           console.log("error " + e);
           done();
       });
+  });
+
+
+  it('can delete a datastream', function (done) {
+    const ps = sails.services['ProvisionerService'];
+    const files = Object.keys(fixtures.FILES);
+    const delf = files[0];
+    var index;
+    var dels;
+    ps.createDataSet(store, DATASET)
+      .flatMap((dataset) => {
+        return Observable.forkJoin(files.map((f) => {
+          const fstream = fs.createReadStream(fixtures.FILES[f]);
+          return ps.addDatastream(store, DATASET, f, fstream);
+        }));
+      })
+      .flatMap((paths) => {
+        return ps.listDatastreams(store, DATASET);
+      })
+      .flatMap((idx) => {
+        index = idx;
+        dels = ps.delete(store, DATASET, delf);
+        return ps.listDatastreams(store, DATASET);
+      })
+      .subscribe((idx2) => {
+        const indexe = index.filter(f => f !== delf);
+        expect(idx2).to.have.members(indexe);
+        done();
+      },
+      e => {
+        console.log("error " + e);
+        done();
+    });
   });
 
 
