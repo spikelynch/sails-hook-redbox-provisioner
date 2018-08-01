@@ -7,6 +7,9 @@
 const chai = require('chai');
 const chaiFiles = require('chai-files');
 
+const { Observable } = require('rxjs/Rx');
+
+
 chai.use(chaiFiles);
 
 const expect = chai.expect;
@@ -74,24 +77,30 @@ describe('Basic tests ::', function () {
   });
 
   afterEach(function() {
-    fixtures.teardown(fixtures.OUTPUT);
-    for( var k in fixtures.STORES ) {
-      fixtures.teardown(fixtures.STORES[k]);
-    }
+   fixtures.teardown(fixtures.OUTPUT);
+   for( var k in fixtures.STORES ) {
+     fixtures.teardown(fixtures.STORES[k]);
+   }
   });
 
-  it('should have a service', function (done) {
+  // Test that Sails can lift with the hook in place
+  it('sails does not crash', function () {
+    return true;
+  });
+
+
+  it('should have a service', function () {
     expect(sails.services['ProvisionerService']).to.not.be.empty;
-    done();
   });
 
 
-  it('can create a dataset', function () {
+  it('can create a dataset', function (done) {
     const ps = sails.services['ProvisionerService'];
     ps.createDataSet(store, DATASET)
       .subscribe((dataset) => {
         expect(dataset).to.not.be.empty;
         expect(dataset).to.have.property('id').to.equal(DATASET);
+        done();
       },
       e => {
         console.log("error " + e);
@@ -99,7 +108,7 @@ describe('Basic tests ::', function () {
 
   });
 
-  it('can add a datastream to a dataset', function () {
+  it('can add a datastream to a dataset', function (done) {
     const ps = sails.services['ProvisionerService'];
     const dsid = _.keys(fixtures.FILES)[0]; // arbitrary file
     const fpath = fixtures.FILES[dsid];
@@ -107,45 +116,62 @@ describe('Basic tests ::', function () {
     ps.createDataSet(store, DATASET)
       .flatMap((dataset) => {
         const fstream = fs.createReadStream(fpath);
-        return ps.addDataStream(store, DATASET, FILE, fstream)
-      })
-      .subscribe((dspath) => {
-        const epath = path.join(store['uri'], DATASET, fpath);
+        return ps.addDatastream(store, DATASET, dsid, fstream)
+      }).subscribe((dspath) => {
+        const epath = path.join(store['uri'], DATASET, dsid);
         expect(dspath).to.equal(epath);
-        expect(file(fpath)).to.equal(file(dspath));
+        expect(file(dspath)).to.equal(file(fpath));
+        done();
       },
-      e => {
-        console.log("error " + e);
-      });
+      e => { console.log('error'); done(); });
   });
 
-
-
-  it.skip('can get a datastream', function () {
+  it('can read back a datastream', function (done) {
     const ps = sails.services['ProvisionerService'];
-    const origpath = path.join(store['uri'], DATASET, FILE);
-    const fpath = path.join(OUTDIR, FILE);
-    ps.getDatastream(store, DATASET, FILE)
-      .subscribe((ds) => {
+    const dsid = _.keys(fixtures.FILES)[0]; // arbitrary file
+    const fpath = fixtures.FILES[dsid];
+    ps.createDataSet(store, DATASET)
+      .flatMap((dataset) => {
+        const fstream = fs.createReadStream(fpath);
+        return ps.addDatastream(store, DATASET, dsid, fstream)
+      })
+      .flatMap((ds) => {
+        return ps.getDatastream(store, DATASET, dsid)
+      }).subscribe((ds) => {
         expect(ds).to.not.be.empty;
-        const fstream = fs.createWriteStream(fpath);
+        const outpath = path.join(fixtures.OUTPUT, dsid);
+        const fstream = fs.createWriteStream(outpath);
         ds.pipe(fstream).on('finish', () => {
-          expect(file(fpath)).to.equal(file(origpath));
+          expect(file(fpath)).to.equal(file(outpath));
+          done();
         });
       },
-      e => {
+      e => { 
         console.log("error " + e);
-      });
+        done();
+      })
   });
 
-  it.skip('can get a list of datastreams', function () {
+  it('can get a list of datastreams', function (done) {
     const ps = sails.services['ProvisionerService'];
-    ps.listDatastreams(store, DATASET)
+    const files = Object.keys(fixtures.FILES);
+    ps.createDataSet(store, DATASET)
+      .flatMap((dataset) => {
+        return Observable.forkJoin(files.map((f) => {
+          const fstream = fs.createReadStream(fixtures.FILES[f]);
+          return ps.addDatastream(store, DATASET, f, fstream);
+        }));
+      })
+      .flatMap((paths) => {
+        return ps.listDatastreams(store,DATASET)
+      })
       .subscribe((idx) => {
-        expect(idx).to.have.members(INDEX);
-      },
-      e => {
-        console.log("error " + e);
+          expect(idx).to.have.members(files);
+          done();
+        },
+        e => {
+          console.log("error " + e);
+          done();
       });
   });
 
@@ -176,9 +202,5 @@ describe('Basic tests ::', function () {
     return done();
   });
 
-  // Test that Sails can lift with the hook in place
-  it('sails does not crash', function () {
-    return true;
-  });
 
 });

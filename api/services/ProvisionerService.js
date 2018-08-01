@@ -67,109 +67,102 @@ var Services;
         ProvisionerService.prototype._config = function () {
         };
         ProvisionerService.prototype.listDatastreams = function (store, oid) {
-            var _this = this;
             var fa = this.getFilesApp(store);
             if (fa) {
-                return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
-                    var fo;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4, fa.find(oid)];
-                            case 1:
-                                fo = _a.sent();
-                                if (!fo) return [3, 3];
-                                return [4, fo.index()];
-                            case 2: return [2, _a.sent()];
-                            case 3: return [2, undefined];
-                        }
-                    });
-                }); });
-            }
-            else {
-                return undefined;
-            }
-        };
-        ProvisionerService.prototype.getDatastream = function (store, oid, dsid) {
-            var _this = this;
-            var fa = this.getFilesApp(store);
-            if (fa) {
-                return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
-                    var fo;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4, fa.find(oid)];
-                            case 1:
-                                fo = _a.sent();
-                                if (fo)
-                                    return [2, fo.export_stream(dsid)];
-                                else {
-                                    return [2, undefined];
-                                }
-                                return [2];
-                        }
-                    });
-                }); });
+                return Rx_1.Observable.fromPromise(this.oid_index(fa, oid));
             }
             else {
                 return Rx_1.Observable.of(undefined);
             }
         };
-        ProvisionerService.prototype.createDataSet = function (store, oid) {
-            var _this = this;
+        ProvisionerService.prototype.oid_index = function (fa, oid) {
+            return __awaiter(this, void 0, void 0, function () {
+                var fo;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4, fa.find(oid)];
+                        case 1:
+                            fo = _a.sent();
+                            if (!fo) return [3, 3];
+                            return [4, fo.index()];
+                        case 2: return [2, _a.sent()];
+                        case 3: return [2, undefined];
+                    }
+                });
+            });
+        };
+        ProvisionerService.prototype.getDatastream = function (store, oid, dsid) {
             var fa = this.getFilesApp(store);
             if (fa) {
-                return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4, fa.create(oid)];
-                            case 1: return [2, _a.sent()];
-                        }
-                    });
-                }); });
+                return Rx_1.Observable.fromPromise(this.oid_stream(fa, oid, dsid));
+            }
+            else {
+                return Rx_1.Observable.of(undefined);
+            }
+        };
+        ProvisionerService.prototype.oid_stream = function (fa, oid, dsid) {
+            return __awaiter(this, void 0, void 0, function () {
+                var fo;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4, fa.find(oid)];
+                        case 1:
+                            fo = _a.sent();
+                            if (fo)
+                                return [2, fo.export_stream(dsid)];
+                            else {
+                                return [2, undefined];
+                            }
+                            return [2];
+                    }
+                });
+            });
+        };
+        ProvisionerService.prototype.createDataSet = function (store, oid) {
+            var fa = this.getFilesApp(store);
+            if (fa) {
+                return Rx_1.Observable.fromPromise(fa.create(oid));
             }
             else {
                 return Rx_1.Observable.of(undefined);
             }
         };
         ProvisionerService.prototype.getDataSet = function (store, oid) {
-            var _this = this;
             var fa = this.getFilesApp(store);
             if (fa) {
-                return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4, fa.find(oid)];
-                            case 1: return [2, _a.sent()];
-                        }
-                    });
-                }); });
+                return Rx_1.Observable.fromPromise(fa.find(oid));
             }
             else {
                 return Rx_1.Observable.of(undefined);
             }
         };
         ProvisionerService.prototype.addDatastream = function (store, oid, dsid, st) {
-            var _this = this;
             var fa = this.getFilesApp(store);
             if (fa) {
-                return Rx_1.Observable.defer(function () { return __awaiter(_this, void 0, void 0, function () {
-                    var fo;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4, fa.find(oid)];
-                            case 1:
-                                fo = _a.sent();
-                                if (!fo) return [3, 3];
-                                return [4, fo.import_stream(dsid, st)];
-                            case 2: return [2, _a.sent()];
-                            case 3: return [2, undefined];
-                        }
-                    });
-                }); });
+                return Rx_1.Observable.fromPromise(this.oid_add_stream(fa, oid, dsid, st));
             }
             else {
                 return Rx_1.Observable.of(undefined);
             }
+        };
+        ProvisionerService.prototype.oid_add_stream = function (fa, oid, dsid, st) {
+            return __awaiter(this, void 0, void 0, function () {
+                var fo;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0: return [4, fa.find(oid)];
+                        case 1:
+                            fo = _a.sent();
+                            if (fo) {
+                                return [2, fo.import_stream(dsid, st)];
+                            }
+                            else {
+                                return [2, undefined];
+                            }
+                            return [2];
+                    }
+                });
+            });
         };
         ProvisionerService.prototype.removeDatastream = function (store) {
             return Rx_1.Observable.of(false);
