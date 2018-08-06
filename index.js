@@ -15,8 +15,12 @@ module.exports = function (sails) {
     routes: {
       before: {},
       after: {
-        'get /:branding/:portal/ws/provisioner/datastream/$oid': ProvisionerController.getDatastream,
-        'get /:branding/:portal/ws/provisioner/hello_word': ProvisionerController.helloWorld
+        'get /:branding/:portal/ws/provisioner/datastream/:oid': ProvisionerController.getDatastream,
+        'post /:branding/:portal/ws/provisioner/datastream/:oid': ProvisionerController.addDatastream,
+        'delete /:branding/:portal/ws/provisioner/datastream/:oid': ProvisionerController.removeDatastream,
+        'get /:branding/:portal/ws/provisioner/datastream/:oid/list': ProvisionerController.listDatastreams,
+        'get /:branding/:portal/ws/provisioner/hello_world': ProvisionerController.helloWorld,
+        'get /:branding/:portal/ws/provisioner/test_param/:var': ProvisionerController.testParam
       }
     },
     configure: function () {

@@ -72,13 +72,14 @@ export module Services {
       }
     }
 
+// trying to throw the error from here
 
-    public getDatastream(store: Object, oid: string, dsid: string): Observable<stream.Readable|undefined> {
+    public getDatastream(store: Object, oid: string, dsid: string): Observable<stream.Readable> {
       const fa = this.getFilesApp(store);
       if( fa ) {
         return Observable.fromPromise(this.oid_stream(fa, oid, dsid));
       } else {
-        return Observable.of(undefined);
+        return Observable.throw("an error");
       }
     }
 

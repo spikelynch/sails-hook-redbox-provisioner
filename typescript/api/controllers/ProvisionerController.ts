@@ -24,8 +24,10 @@ declare var sails;
 
 import { Observable } from 'rxjs/Rx';
 
+import * as stream from 'stream';
 
-declare var BrandingService, ProvisionerService;
+
+declare var BrandingService, RecordsService, ProvisionerService;
 
 import controller = require('../core/CoreController.js'); 
 
@@ -42,12 +44,13 @@ export module Controllers {
 
 		protected _exportedMethods: any = [
 			'getDatastream',
-			'helloWorld'
-			// 'addDatastream',
-			// 'removeDatastream',
+			'helloWorld',
+			'testParam',
+			'listDatastreams',
+			'addDatastream',
+			'removeDatastream'
 			// 'addDatastreams',
 			// 'addAndRemoveDatastreams',   //not in use
-			// 'listDatastreams'
 		];
 
 
@@ -59,52 +62,162 @@ export module Controllers {
 			return res.json({ hello: "hello, world"});
 		}
 
-		public getDatastream(req, res) {
-			const oid = req.param('oid');
-			const dsid = req.param('datastreamId');
-			const store = { 
+		public testParam(req, res) {
+			sails.log.info("Called sails-hook-redbox-provisioner test_param");
+			const param = req.param('var');
+			return res.json({ hello: "hello, world", var: param});
+		}
+
+
+		// _allowAccess checks if the user has view or edit permissions
+		// over the record, and returns the correct store object
+		// based on the record's type and workflow
+
+		protected _allowAccess(req, res, access): Observable<Object|undefined> {
+			sails.log.info("checking access for sails-hook-redbox-provisioner");
+			const brand = BrandingService.getBrand(req.session.branding);
+			const oid = req.param('oid') ? req.param('oid') : '';
+			const hasAccess = (access == 'view') ? RecordsService.hasViewAccess : RecordsService.hasEditAccess; 
+			return RecordsService.getMeta(oid)
+				.flatMap(record => {
+					if( hasAccess(brand, req.user, req.user.roles, record) ) {
+						sails.log.info(req.use + " has access to " + oid);
+						return Observable.of(this._store(record));
+					}
+					sails.log.info("access denied");
+					return Observable.of(undefined);
+				});
+		}
+
+		// _store returns the storage FilesApp this record is using
+		// for now it just returns staging
+		// TODO: make this apply a rule mapping recordtype + workflow
+		// stage to document store
+
+		protected _store(stage: string): Object {
+			return { 
 				id: 'staging',
 				uri: sails.config.provisioner.stores['staging']
-			};
-			return ProvisionerService.getDataSet(store, oid)
-				.flatMap(dataset => {
-					if( !dataset ) {
-						sails.log.verbose("Object " + oid + " has no dataset");
-						return Observable.throw(new Error('no-dataset'));
+			}
+		}
+
+
+		public listDatastreams(req, res) {
+			const oid = req.param('oid');
+			return this._allowAccess(req, res, 'edit')
+				.flatMap(store => {
+					if( !store ) {
+						return Observable.throw(new Error('access denied'));
+					}
+					return ProvisionerService.listDatastreams(store, oid)
+				})
+				.flatMap(index => {
+					if( !index ) {
+						return res.json([]);
 					} else {
-						res.set('Content-Type', 'application/octet-stream');
-						res.set('Content-Disposition', `attachment; filename=${dsid}`);
-						sails.log.verbose(`returning datastream ${oid} ${dsid}`);
-						return ProvisionerService.getDatastream(store, oid, dsid)
-							.flatMap(stream => {
-								stream.pipe(res).on('finish', () => {
-									return Observable.of(oid);
-								});
-							});
+						return res.json(index)
 					}
 				}).subscribe(
 					whatever => {},
 					error => {
+						sails.log.error(error);
 						res.notFound();
 					});
-		
 		}
+
+
+		public getDatastream(req, res) {
+			const oid = req.param('oid');
+			const dsid = req.param('datastreamId');
+			return this._allowAccess(req, res, 'view')
+				.flatMap(store => {
+					if( !store ) {
+						return Observable.throw(new Error('access denied'));
+					}
+					return ProvisionerService.getDatastream(store, oid, dsid)
+				}).flatMap(stream => {
+					if( !stream ) {
+						sails.log.verbose("Datastream " + oid + '/' + dsid + " not found");
+						return Observable.throw(new Error('no-datastream'));
+					} else {
+						const sstream = stream as stream.Readable;
+						res.set('Content-Type', 'application/octet-stream');
+						res.set('Content-Disposition', `attachment; filename=${dsid}`);
+						sails.log.verbose(`returning datastream ${oid} ${dsid}`);
+						sstream.pipe(res).on('finish', () => {
+								return Observable.of(dsid);
+						});
+					}
+				}).subscribe(
+					whatever => {},
+					error => {
+						sails.log.error(error);
+						res.notFound();
+					});
+		}
+
 
 		public addDatastream(req, res) {
+			const oid = req.param('oid');
+			const dsid = req.param('datastreamId');
+			return this._allowAccess(req, res, 'edit')
+				.flatMap(store => {
+					if( !store ) {
+						return Observable.throw(new Error('access denied'));
+					}
+					const stream = req.file('data');  // check parameter
+					return ProvisionerService.addDatastream(store, oid, dsid, stream)
+				}).flatMap(path => {
+					if( !path ) {
+						sails.log.verbose("Uploade to " + oid + '/' + dsid + " failed");
+						return Observable.throw(new Error('no-datastream'));
+					} else {
+						return res.json({ "path": path });
+					}
+				}).subscribe(
+					whatever => {},
+					error => {
+						sails.log.error(error);
+						res.notFound();
+					});
 		}
+	
 
 		public removeDatastream(req, res) {
+			const oid = req.param('oid');
+			const dsid = req.param('datastreamId');
+			return this._allowAccess(req, res, 'edit')
+				.flatMap(store => {
+					if( !store ) {
+						return Observable.throw(new Error('access denied'));
+					}
+					// this needs more precautions for immutable stores
+					return ProvisionerService.removeDatastream(store, oid, dsid)
+				}).flatMap(success => {
+					if( !success ) {
+						sails.log.verbose("Uploade to " + oid + '/' + dsid + " failed");
+						return Observable.throw(new Error('no-datastream'));
+					} else {
+						return res.json({ "deleted": success });
+					}
+				}).subscribe(
+					whatever => {},
+					error => {
+						sails.log.error(error);
+						res.notFound();
+					});
 		}
 
-		public addDatastreams(req, res) {
-		}
 
-		public addAndRemoveDatastreams(req, res) {
-		}
 
-		public listDatastreams(req, res) {
 
-		}
+	
+		// public addDatastreams(req, res) {
+		// }
+
+		// public addAndRemoveDatastreams(req, res) {
+		// }
+
 
 
 
