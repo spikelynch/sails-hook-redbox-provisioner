@@ -27,7 +27,7 @@ import { Observable } from 'rxjs/Rx';
 import * as stream from 'stream';
 
 
-declare var BrandingService, RecordsService, ProvisionerService;
+declare var BrandingService, RecordsService, RecordTypesService, User, ProvisionerService;
 
 import controller = require('../core/CoreController.js'); 
 
@@ -59,8 +59,13 @@ export module Controllers {
 
 		public helloWorld(req, res) {
 			sails.log.info("Called sails-hook-redbox-provisioner hello world");
-			return res.json({ hello: "hello, world"});
+			sails.log.info("req " + req);
+			sails.log.info("req properties" + JSON.stringify(Object.getOwnPropertyNames(req)));
+			sails.log.info("req.user " + req.user);
+			const authen = req.isAuthenticated();			
+			return res.json({ hello: "hello, world", status: "this has been updated" });
 		}
+
 
 		public testParam(req, res) {
 			sails.log.info("Called sails-hook-redbox-provisioner test_param");
@@ -73,20 +78,11 @@ export module Controllers {
 		// over the record, and returns the correct store object
 		// based on the record's type and workflow
 
-		protected _allowAccess(req, res, access): Observable<Object|undefined> {
-			sails.log.info("checking access for sails-hook-redbox-provisioner");
-			const brand = BrandingService.getBrand(req.session.branding);
-			const oid = req.param('oid') ? req.param('oid') : '';
-			const hasAccess = (access == 'view') ? RecordsService.hasViewAccess : RecordsService.hasEditAccess; 
+		protected _withRecordStore(oid: string): Observable<Object> {
 			return RecordsService.getMeta(oid)
 				.flatMap(record => {
-					if( hasAccess(brand, req.user, req.user.roles, record) ) {
-						sails.log.info(req.use + " has access to " + oid);
 						return Observable.of(this._store(record));
-					}
-					sails.log.info("access denied");
-					return Observable.of(undefined);
-				});
+					});
 		}
 
 		// _store returns the storage FilesApp this record is using
@@ -104,36 +100,30 @@ export module Controllers {
 
 		public listDatastreams(req, res) {
 			const oid = req.param('oid');
-			return this._allowAccess(req, res, 'edit')
+			return this._withRecordStore(oid)
 				.flatMap(store => {
-					if( !store ) {
-						return Observable.throw(new Error('access denied'));
-					}
 					return ProvisionerService.listDatastreams(store, oid)
 				})
-				.flatMap(index => {
+				.subscribe(index => {
+					sails.log.info("listDatastreams = " + JSON.stringify(index)); 
 					if( !index ) {
 						return res.json([]);
 					} else {
 						return res.json(index)
 					}
-				}).subscribe(
-					whatever => {},
-					error => {
-						sails.log.error(error);
-						res.notFound();
-					});
+				},
+				error => {
+					sails.log.error(error);
+					res.json({ "error": error });
+				});
 		}
 
 
 		public getDatastream(req, res) {
 			const oid = req.param('oid');
-			const dsid = req.param('datastreamId');
-			return this._allowAccess(req, res, 'view')
+			const dsid = req.param('dsid');
+			return this._withRecordStore(oid)
 				.flatMap(store => {
-					if( !store ) {
-						return Observable.throw(new Error('access denied'));
-					}
 					return ProvisionerService.getDatastream(store, oid, dsid)
 				}).flatMap(stream => {
 					if( !stream ) {
@@ -152,60 +142,55 @@ export module Controllers {
 					whatever => {},
 					error => {
 						sails.log.error(error);
-						res.notFound();
+						res.json({ "error": error });
 					});
 		}
 
 
 		public addDatastream(req, res) {
 			const oid = req.param('oid');
-			const dsid = req.param('datastreamId');
-			return this._allowAccess(req, res, 'edit')
+			const dsid = req.param('dsid');
+			return this._withRecordStore(oid)
 				.flatMap(store => {
 					if( !store ) {
 						return Observable.throw(new Error('access denied'));
 					}
 					const stream = req.file('data');  // check parameter
 					return ProvisionerService.addDatastream(store, oid, dsid, stream)
-				}).flatMap(path => {
+				}).subscribe(path => {
 					if( !path ) {
-						sails.log.verbose("Uploade to " + oid + '/' + dsid + " failed");
-						return Observable.throw(new Error('no-datastream'));
+						sails.log.warn("Uploaded to " + oid + '/' + dsid + " failed");
+						return Observable.throw(new Error('upload-failed'));
 					} else {
 						return res.json({ "path": path });
 					}
-				}).subscribe(
-					whatever => {},
-					error => {
-						sails.log.error(error);
-						res.notFound();
-					});
+				},
+				error => {
+					sails.log.error(error);
+					res.json({ "error": error });
+				});
 		}
 	
 
 		public removeDatastream(req, res) {
 			const oid = req.param('oid');
-			const dsid = req.param('datastreamId');
-			return this._allowAccess(req, res, 'edit')
+			const dsid = req.param('dsid');
+			return this._withRecordStore(oid)
 				.flatMap(store => {
-					if( !store ) {
-						return Observable.throw(new Error('access denied'));
-					}
 					// this needs more precautions for immutable stores
 					return ProvisionerService.removeDatastream(store, oid, dsid)
-				}).flatMap(success => {
+				}).subscribe(success => {
 					if( !success ) {
-						sails.log.verbose("Uploade to " + oid + '/' + dsid + " failed");
-						return Observable.throw(new Error('no-datastream'));
+						sails.log.verbose("Removal of " + oid + '/' + dsid + " failed");
+						return Observable.throw(new Error('delete-failed'));
 					} else {
 						return res.json({ "deleted": success });
 					}
-				}).subscribe(
-					whatever => {},
-					error => {
-						sails.log.error(error);
-						res.notFound();
-					});
+				},
+				error => {
+					sails.log.error(error);
+					res.json({ "error": error });
+				});
 		}
 
 

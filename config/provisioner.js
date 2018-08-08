@@ -1,9 +1,9 @@
 module.exports = {
 	provisioner: {
 		stores: {
-			data: './test/fixtures/data',
-			staging: './test/fixtures/staging',
-			public: './test/fixtures/public'
+			data: '/opt/store/data',
+			staging: '/opt/store/staging',
+			public: '/opt/store/public'
 		},
 		locations: {
 			dataRecord: {

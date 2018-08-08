@@ -24,6 +24,7 @@ export module Services {
       'addDatastream',
       'addPath',
       'delete',
+      'observable'
     ];
 
     constructor() {
@@ -98,6 +99,7 @@ export module Services {
     public addDatastream(store: Object, oid: string, dsid: string, st: stream.Readable): Observable<string|undefined> {
       const fa = this.getFilesApp(store);
       if( fa ) {
+      	sails.log.debug("Adding datastream to existing FilesApp");
         return Observable.fromPromise(this.oid_add_stream(fa, oid, dsid, st));
       } else {
         return Observable.of(undefined);
@@ -105,12 +107,13 @@ export module Services {
     }
 
     async oid_add_stream(fa: FilesApp, oid: string, dsid: string, st: stream.Readable): Promise<string> {
-      const fo = await fa.find(oid);
-      if( fo ) {
-        return fo.import_stream(dsid, st);
-      } else {
-        return undefined;
+      var fo = await fa.find(oid);
+      if( !fo ) {
+      	sails.log.debug("Creating storage for " + oid);
+      	fo = await fa.create(oid);
       }
+      sails.log.debug("Importing stream for " + oid + "/" + dsid);
+      return fo.import_stream(dsid, st);
     }
 
     public addPath(store: Object, oid: string, path: string): Observable<string|undefined> {
