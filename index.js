@@ -12,14 +12,16 @@ module.exports = function (sails) {
       return cb();
     },
     //If each route middleware do not exist sails.lift will fail during hook.load()
+
+    // Note that all routes except for list need a datastreamId parameter.
     routes: {
       before: {},
       after: {
-        'get /:branding/:portal/ws/provisioner/:oid': ProvisionerController.listDatastreams,
-        'get /:branding/:portal/ws/provisioner/:oid/:dsid': ProvisionerController.getDatastream,
-        'post /:branding/:portal/ws/provisioner/:oid/:dsid': ProvisionerController.addDatastream,
-        'put /:branding/:portal/ws/provisioner/:oid/:dsid': ProvisionerController.updateDatastream,
-        'delete /:branding/:portal/ws/provisioner/:oid/:dsid': ProvisionerController.removeDatastream,
+        'get /:branding/:portal/ws/provisioner/list/:oid': ProvisionerController.listDatastreams,
+        'get /:branding/:portal/ws/provisioner/datastream/:oid': ProvisionerController.getDatastream,
+        'post /:branding/:portal/ws/provisioner/datastream/:oid': ProvisionerController.addDatastream,
+//        'put /:branding/:portal/ws/provisioner/datasteram:oid': ProvisionerController.addDatastreams,
+        'delete /:branding/:portal/ws/provisioner/datastream/:oid': ProvisionerController.removeDatastream,
         'get /:branding/:portal/ws/provisioner/hello_world': ProvisionerController.helloWorld
       }
     },

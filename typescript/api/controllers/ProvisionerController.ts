@@ -121,60 +121,71 @@ export module Controllers {
 
 		public getDatastream(req, res) {
 			const oid = req.param('oid');
-			const dsid = req.param('dsid');
+			const dsid = req.param('datastreamId');
+			sails.log.info(`getDatastream ${oid} ${dsid}`);
 			return this._withRecordStore(oid)
 				.flatMap(store => {
 					return ProvisionerService.getDatastream(store, oid, dsid)
-				}).flatMap(stream => {
+				}).subscribe(stream => {
+					sails.log.info("What are you: " + stream);
+					sails.log.info("What are you: " + JSON.stringify(stream));
+					sails.log.info("What are you: " + typeof(stream));
 					if( !stream ) {
-						sails.log.verbose("Datastream " + oid + '/' + dsid + " not found");
+						sails.log.info("Datastream " + oid + '/' + dsid + " not found");
 						return Observable.throw(new Error('no-datastream'));
 					} else {
-						const sstream = stream as stream.Readable;
-						res.set('Content-Type', 'application/octet-stream');
-						res.set('Content-Disposition', `attachment; filename=${dsid}`);
-						sails.log.verbose(`returning datastream ${oid} ${dsid}`);
-						sstream.pipe(res).on('finish', () => {
-								return Observable.of(dsid);
-						});
+						sails.log.info(`returning datastream ${oid} ${dsid}`);
+						const rstream = stream as stream.Readable;
+						rstream.pipe(res, { end: false });
+						rstream.on('end', () => {
+							sails.log.info("The end callback was reached");
+						 	res.end();
+						})
 					}
-				}).subscribe(
-					whatever => {},
-					error => {
-						sails.log.error(error);
-						res.json({ "error": error });
-					});
+				},
+				error => {
+					sails.log.error(error);
+					return res.json({ "error": error });
+				});
 		}
 
 
 		public addDatastream(req, res) {
 			const oid = req.param('oid');
-			const dsid = req.param('dsid');
+			const dsid = req.param('datastreamId');
 			return this._withRecordStore(oid)
 				.flatMap(store => {
 					if( !store ) {
 						return Observable.throw(new Error('access denied'));
 					}
-					const stream = req.file('data');  // check parameter
-					return ProvisionerService.addDatastream(store, oid, dsid, stream)
-				}).subscribe(path => {
-					if( !path ) {
+					const uploadDir = path.join(store, oid);
+					return Observable.fromPromise(this._upload(req.file('data'), uploadDir))
+				}).subscribe(files => {
+					if( !files ) {
 						sails.log.warn("Uploaded to " + oid + '/' + dsid + " failed");
 						return Observable.throw(new Error('upload-failed'));
 					} else {
-						return res.json({ "path": path });
+						return res.json({ "files": files });
 					}
 				},
 				error => {
 					sails.log.error(error);
-					res.json({ "error": error });
+					return res.json({ "error": error });
 				});
 		}
+
+		protected _upload(, dir): Promise<string[]> {
+
+					req.file('data').upload((err, uploadedFiles) {
+						if( err ) return res.serverError(err);
+						 
+					});
+
 	
 
 		public removeDatastream(req, res) {
 			const oid = req.param('oid');
-			const dsid = req.param('dsid');
+			const dsid = req.param('datastreamId');
 			return this._withRecordStore(oid)
 				.flatMap(store => {
 					// this needs more precautions for immutable stores
@@ -189,7 +200,7 @@ export module Controllers {
 				},
 				error => {
 					sails.log.error(error);
-					res.json({ "error": error });
+					return res.json({ "error": error });
 				});
 		}
 
@@ -197,8 +208,9 @@ export module Controllers {
 
 
 	
-		// public addDatastreams(req, res) {
-		// }
+		public addDatastreams(req, res) {
+			return res.json({watch: 'this space'});			
+		}
 
 		// public addAndRemoveDatastreams(req, res) {
 		// }
